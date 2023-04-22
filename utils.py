@@ -1,6 +1,6 @@
 import logging
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
-from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM
+from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, LOG_CHANNEL, SHORTLINK_API, SHORTLINK_URL
 from imdb import Cinemagoer
 import asyncio
 from pyrogram.types import Message, InlineKeyboardButton
@@ -8,11 +8,16 @@ from pyrogram import enums
 from typing import Union
 import re
 import os
-from datetime import datetime
+import random
+import string
+import pytz
+from datetime import datetime, time, date, timedelta
+from Script import script
 from typing import List
 from database.users_chats_db import db
 from bs4 import BeautifulSoup
 import requests
+import aiohttp
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -24,6 +29,8 @@ BTN_URL_REGEX = re.compile(
 imdb = Cinemagoer()
 
 BANNED = {}
+TOKENS = {}
+VERIFIED = {}
 SMART_OPEN = '“'
 SMART_CLOSE = '”'
 START_CHAR = ('\'', '"', SMART_OPEN)
@@ -39,6 +46,7 @@ class temp(object):
     U_NAME = None
     B_NAME = None
     SETTINGS = {}
+    VERIFY = {}
 
 async def is_subscribed(bot, query):
     try:
@@ -375,3 +383,131 @@ def humanbytes(size):
         size /= power
         n += 1
     return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
+
+async def get_verify_shorted_link(link):
+    API = SHORTLINK_API
+    URL = SHORTLINK_URL
+    https = link.split(":")[0]
+    if "http" == https:
+        https = "https"
+        link = link.replace("http", https)
+
+    if URL == "api.shareus.in":
+        url = f"https://{URL}/shortLink"
+        params = {"token": API,
+                  "format": "json",
+                  "link": link,
+                  }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json(content_type="text/html")
+                    if data["status"] == "success":
+                        return data["shortlink"]
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
+
+        except Exception as e:
+            logger.error(e)
+            return f'https://{URL}/shortLink?token={API}&format=json&link={link}'
+    else:
+        url = f'https://{URL}/api'
+        params = {'api': API,
+                  'url': link,
+                  }
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, params=params, raise_for_status=True, ssl=False) as response:
+                    data = await response.json()
+                    if data["status"] == "success":
+                        return data['shortenedUrl']
+                    else:
+                        logger.error(f"Error: {data['message']}")
+                        return f'https://{URL}/api?api={API}&link={link}'
+
+        except Exception as e:
+            logger.error(e)
+            return f'{URL}/api?api={API}&link={link}'
+
+async def check_token(bot, userid, token):
+    user = await bot.get_users(userid)
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    if user.id in TOKENS.keys():
+        TKN = TOKENS[user.id]
+        if token in TKN.keys():
+            is_used = TKN[token]
+            if is_used == True:
+                return False
+            else:
+                return True
+    else:
+        return False
+
+async def get_token(bot, userid, link, fileid):
+    user = await bot.get_users(userid)
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
+    TOKENS[user.id] = {token: False}
+    link = f"{link}verify-{user.id}-{token}-{fileid}"
+    shortened_verify_url = await get_verify_shorted_link(link)
+    return str(shortened_verify_url)
+
+async def get_verify_status(userid):
+    status = temp.VERIFY.get(userid)
+    if not status:
+        status = await db.get_verified(userid)
+        temp.VERIFY[userid] = status
+    return status
+    
+async def update_verify_status(userid, date_temp, time_temp):
+    status = await get_verify_status(userid)
+    status["date"] = date_temp
+    status["time"] = time_temp
+    temp.VERIFY[userid] = status
+    await db.update_verification(userid, date_temp, time_temp)
+
+async def verify_user(bot, userid, token):
+    user = await bot.get_users(int(userid))
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    TOKENS[user.id] = {token: True}
+    tz = pytz.timezone('Asia/Kolkata')
+    date_var = datetime.now(tz)+timedelta(hours=12)
+    temp_time = date_var.strftime("%H:%M:%S")
+    date_var, time_var = str(date_var).split(" ")
+    await update_verify_status(user.id, date_var, temp_time)
+
+async def check_verification(bot, userid):
+    user = await bot.get_users(int(userid))
+    if not await db.is_user_exist(user.id):
+        await db.add_user(user.id, user.first_name)
+        await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
+    tz = pytz.timezone('Asia/Kolkata')
+    today = date.today()
+    now = datetime.now(tz)
+    curr_time = now.strftime("%H:%M:%S")
+    hour1, minute1, second1 = curr_time.split(":")
+    curr_time = time(int(hour1), int(minute1), int(second1))
+    status = await get_verify_status(user.id)
+    date_var = status["date"]
+    time_var = status["time"]
+    years, month, day = date_var.split('-')
+    comp_date = date(int(years), int(month), int(day))
+    hour, minute, second = time_var.split(":")
+    comp_time = time(int(hour), int(minute), int(second))
+    if comp_date<today:
+        return False
+    else:
+        if comp_date == today:
+            if comp_time<curr_time:
+                return False
+            else:
+                return True
+        else:
+            return True
