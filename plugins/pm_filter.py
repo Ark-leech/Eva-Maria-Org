@@ -368,7 +368,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                         protect_content=True,
                         reply_markup=InlineKeyboardMarkup(btn)
                     )
-                    await query.answer("Hey, You are not verified today !\nVerify to continue !\nCheck PM, I've sent the verification link there.")
+                    await query.answer("Hey, You are not verified today !\nVerify to continue !\nCheck PM, I've sent the verification link there.", show_alert=True)
                     return
                 else:
                     await client.send_cached_media(
