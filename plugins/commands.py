@@ -23,7 +23,7 @@ async def start(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         buttons = [
             [
-                InlineKeyboardButton('🤖 Updates', url='https://t.me/ArkBotz')
+                InlineKeyboardButton('🤖 Updates', url='https://t.me/Bot_Updates_Channel')
             ],
             [
                 InlineKeyboardButton('ℹ️ Help', url=f"https://t.me/{temp.U_NAME}?start=help"),
@@ -44,10 +44,7 @@ async def start(client, message):
         buttons = [[
             InlineKeyboardButton('➕ Add Me To Your Groups ➕', url=f'http://t.me/{temp.U_NAME}?startgroup=true')
             ],[
-            InlineKeyboardButton('🔍 Search', switch_inline_query_current_chat=''),
-            InlineKeyboardButton('🤖 Updates', url='https://t.me/ArkBotz')
-            ],[
-            InlineKeyboardButton('🙎 Contact Admin', url='https://t.me/LiveContactMebot')
+            InlineKeyboardButton('How to Verify', url='https://t.me/Bot_Updates_Channel')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
         await message.reply_photo(
