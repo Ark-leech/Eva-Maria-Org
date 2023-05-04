@@ -58,6 +58,8 @@ PUBLIC_FILE_STORE = is_enabled((environ.get('PUBLIC_FILE_STORE', "True")), True)
 IS_VERIFY = bool(environ.get('IS_VERIFY', "True"))
 SHORTLINK_API = environ.get('SHORTLINK_API', "902284efd5e05828f51770d84f5ba26a6abf7751")
 SHORTLINK_URL = environ.get('SHORTLINK_URL', "shorturllink.in")
+SHORTLINK_API2 = environ.get('SHORTLINK_API2', "4fa150d44b4bf6579c24b33bbbb786dbfb4fc673")
+SHORTLINK_URL2 = environ.get('SHORTLINK_URL2', "mdisklink.link")
 
 LOG_STR = "Current Cusomized Configurations are:-\n"
 LOG_STR += ("IMDB Results are enabled, Bot will be showing imdb details for you queries.\n" if IMDB else "IMBD Results are disabled.\n")

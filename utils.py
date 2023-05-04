@@ -1,6 +1,6 @@
 import logging
 from pyrogram.errors import InputUserDeactivated, UserNotParticipant, FloodWait, UserIsBlocked, PeerIdInvalid
-from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, LOG_CHANNEL, SHORTLINK_API, SHORTLINK_URL
+from info import AUTH_CHANNEL, LONG_IMDB_DESCRIPTION, MAX_LIST_ELM, LOG_CHANNEL, SHORTLINK_API, SHORTLINK_URL, SHORTLINK_API2, SHORTLINK_URL2
 from imdb import Cinemagoer
 import asyncio
 from pyrogram.types import Message, InlineKeyboardButton
@@ -384,9 +384,13 @@ def humanbytes(size):
         n += 1
     return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
 
-async def get_verify_shorted_link(link):
-    API = SHORTLINK_API
-    URL = SHORTLINK_URL
+async def get_verify_shorted_link(num, link):
+    if int(num) == 1:
+        API = SHORTLINK_API
+        URL = SHORTLINK_URL
+    else:
+        API = SHORTLINK_API2
+        URL = SHORTLINK_URL2
     https = link.split(":")[0]
     if "http" == https:
         https = "https"
@@ -454,7 +458,22 @@ async def get_token(bot, userid, link, fileid):
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
     link = f"{link}verify-{user.id}-{token}-{fileid}"
-    shortened_verify_url = await get_verify_shorted_link(link)
+    status = await get_verify_status(user.id)
+    time_var = status["time"]
+    date_var = status["date"]
+    years, month, day = date_var.split('-')
+    hour, minute, second = time_var.split(":")
+    tz = pytz.timezone('Asia/Kolkata')
+    date_temp = datetime.now(tz)
+    dt1, tm = str(date_temp).split(" ")
+    temp_datetime = datetime(year=years, month=month, day=day, hour=hour, minute=minute, second=second)
+    date_temp = date_temp-timedelta(hours=12)
+    dt, tm = str(date_temp).split(" ")
+    if dt == dt1:
+        vr_num = 2
+    else:
+        vr_num = 1
+    shortened_verify_url = await get_verify_shorted_link(vr_num, link)
     return str(shortened_verify_url)
 
 async def get_verify_status(userid):
