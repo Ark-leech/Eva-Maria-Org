@@ -458,15 +458,9 @@ async def get_token(bot, userid, link, fileid):
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
     link = f"{link}verify-{user.id}-{token}-{fileid}"
-    status = await get_verify_status(user.id)
-    time_var = status["time"]
-    date_var = status["date"]
-    years, month, day = date_var.split('-')
-    hour, minute, second = time_var.split(":")
     tz = pytz.timezone('Asia/Kolkata')
     date_temp = datetime.now(tz)
     dt1, tm = str(date_temp).split(" ")
-    temp_datetime = datetime(year=years, month=month, day=day, hour=hour, minute=minute, second=second)
     date_temp = date_temp-timedelta(hours=12)
     dt, tm = str(date_temp).split(" ")
     if dt == dt1:
