@@ -359,16 +359,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
                 return
             else:
                 if IS_VERIFY and not await check_verification(client, query.from_user.id):
-                    btn = [[
-                        InlineKeyboardButton("Vᴇʀɪғʏ", url=await get_token(client, query.from_user.id, f"https://telegram.me/{temp.U_NAME}?start=", file_id))
-                    ]]
-                    await client.send_message(
-                        chat_id=query.from_user.id,
-                        text="<b>Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴠᴇʀɪғɪᴇᴅ!\nKɪɴᴅʟʏ ᴠᴇʀɪғʏ ᴛᴏ ᴄᴏɴᴛɪɴᴜᴇ Sᴏ ᴛʜᴀᴛ ʏᴏᴜ ᴄᴀɴ ɢᴇᴛ ᴀᴄᴄᴇss ᴛᴏ ᴜɴʟɪᴍɪᴛᴇᴅ ᴍᴏᴠɪᴇs ᴜɴᴛɪʟ 12 ʜᴏᴜʀs ғʀᴏᴍ ɴᴏᴡ !</b>",
-                        protect_content=True,
-                        reply_markup=InlineKeyboardMarkup(btn)
-                    )
-                    await query.answer("Hey, You are not verified today !\nVerify to continue !\nCheck PM, I've sent the verification link there.", show_alert=True)
+                    await query.answer(url=f"https://t.me/{temp.U_NAME}?start={ident}_{file_id}")
                     return
                 else:
                     await client.send_cached_media(
