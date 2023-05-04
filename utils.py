@@ -458,11 +458,15 @@ async def get_token(bot, userid, link, fileid):
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
     link = f"{link}verify-{user.id}-{token}-{fileid}"
+    status = await get_verify_status(user.id)
+    date_var = status["date"]
+    years, month, day = date_var.split('-')
+    time_var = status["time"]
+    hour, minute, second = time_var.split(":")
+    dt = str(datetime(year=int(years), month=int(month), day=int(day), hour=int(hour), minute=int(minute), second=int(second))-timedelta(hours=12)).split(" ", 1)[0]
     tz = pytz.timezone('Asia/Kolkata')
     date_temp = datetime.now(tz)
-    dt1, tm = str(date_temp).split(" ")
-    date_temp = date_temp-timedelta(hours=12)
-    dt, tm = str(date_temp).split(" ")
+    dt1 = str(date_temp).split(" ", 1)[0]
     if dt == dt1:
         vr_num = 2
     else:
