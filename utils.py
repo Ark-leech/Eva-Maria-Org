@@ -457,7 +457,7 @@ async def get_token(bot, userid, link, fileid):
     text = f"{user.id}-{token}-{fileid}"
     txt_bytes = text.encode("utf-8")
     encoded_bytes = base64.b64encode(txt_bytes).replace(b"+", b"-").replace(b"/", b"_").rstrip(b"=")
-    encoded_text = encoded_bytes.decode("utf-8")
+    encoded_text = encoded_bytes.decode("utf-8")[:32]
     encodelink = f"{link}verify-{encoded_text}"
     shortened_verify_url = await get_verify_shorted_link(encodelink)
     return str(shortened_verify_url)
