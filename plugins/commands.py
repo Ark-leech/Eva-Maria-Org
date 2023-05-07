@@ -199,10 +199,10 @@ async def start(client, message):
             await asyncio.sleep(1) 
         return await sts.delete()
         
-    elif data.split("#", 1)[0] == "verify":
-        userid = data.split("#", 2)[1]
-        token = data.split("#", 3)[2]
-        fileid = data.split("#", 4)[3]
+    elif data.split("-", 1)[0] == "verify":
+        userid = data.split("-", 2)[1]
+        token = data.split("-", 3)[2]
+        fileid = data.split("-", 4)[3]
         if str(message.from_user.id) != str(userid):
             return await message.reply_text(
                 text="<b>Iɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ Exᴘɪʀᴇᴅ ʟɪɴᴋ !</b>",
