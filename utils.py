@@ -454,7 +454,7 @@ async def get_token(bot, userid, link, fileid):
         await bot.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(user.id, user.mention))
     token = ''.join(random.choices(string.ascii_letters + string.digits, k=7))
     TOKENS[user.id] = {token: False}
-    text = f"{user.id}-{token}-{fileid}"
+    text = f"{user.id}#{token}#{fileid}"
     txt_bytes = text.encode("utf-8")
     encoded_bytes = base64.b64encode(txt_bytes).replace(b"+", b"-").replace(b"/", b"_").rstrip(b"=")
     encoded_text = encoded_bytes.decode("utf-8")[:32]
