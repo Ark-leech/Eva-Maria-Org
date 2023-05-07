@@ -200,13 +200,9 @@ async def start(client, message):
         return await sts.delete()
         
     elif data.split("-", 1)[0] == "verify":
-        encoded_url = data.split("-", 1)[1]
-        encoded_bytes = encoded_url.encode("utf-8")
-        decoded_bytes = base64.b64decode(encoded_bytes.replace(b"-", b"+").replace(b"_", b"/") + b"==")
-        decoded_url = decoded_bytes.decode("utf-8")
-        userid = decoded_url.split("#", 1)[0]
-        token = decoded_url.split("#", 2)[1]
-        fileid = decoded_url.split("#", 3)[2]
+        userid = data.split("-", 2)[1]
+        token = data.split("-", 3)[2]
+        fileid = data.split("-", 3)[3]
         if str(message.from_user.id) != str(userid):
             return await message.reply_text(
                 text="<b>Iɴᴠᴀʟɪᴅ ʟɪɴᴋ ᴏʀ Exᴘɪʀᴇᴅ ʟɪɴᴋ !</b>",
